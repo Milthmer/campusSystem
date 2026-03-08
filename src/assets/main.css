@@ -1,0 +1,44 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+body {
+  font-family: 'Microsoft YaHei', sans-serif;
+  overflow: hidden;
+  height: 100vh;
+}
+
+h1 {
+  color: rgb(254, 252, 252);
+  position: absolute;
+  left: 120px;
+  top: 0;
+  line-height: 80px;
+  z-index: 2000;
+  margin: 0;
+}
+header {
+  background-color: #0f1010;
+  height: 80px;
+  width: 100%;
+  position: relative;
+  z-index: 1500;
+}
+header ul {
+  position: absolute;
+  right: 5vw;
+  top: 0;
+  line-height: 80px;
+}
+header li {
+  display: inline;
+  margin-right: 4vw;
+}
+header a {
+  color: rgb(244, 238, 238);
+  text-decoration: none;
+}
+header a:hover {
+  text-decoration: underline;
+}
