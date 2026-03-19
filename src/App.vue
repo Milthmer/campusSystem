@@ -9,28 +9,14 @@
   </header>
 
   <div class="sidebar">
-    <BuildingList
-      :buildings="buildings"
-      :selectedIndex="selectedBuildingIndex"
-      @select="onBuildingSelect"
-    />
-    <HistoryList
-      :historyList="historyList"
-      :activeId="activeHistoryId"
-      @select="onHistorySelect"
-      @delete="deleteHistoryItem"
-      @clear="clearAllHistory"
-    />
+    <BuildingList :buildings="buildings" :selectedIndex="selectedBuildingIndex" @select="onBuildingSelect" />
+    <HistoryList :historyList="historyList" :activeId="activeHistoryId" @select="onHistorySelect"
+      @delete="deleteHistoryItem" @clear="clearAllHistory" />
   </div>
 
   <div class="map-wrapper">
-    <MapContainer
-      ref="mapContainer"
-      :buildings="buildings"
-      :routeCoords="currentRouteCoords"
-      :highlightedFeature="highlightedFeature"
-      @map-click="onMapClick"
-    />
+    <MapContainer ref="mapContainer" :buildings="buildings" :routeCoords="currentRouteCoords"
+      :highlightedFeature="highlightedFeature" @map-click="onMapClick" />
   </div>
 
   <div id="info-panel">
@@ -45,28 +31,8 @@ import HistoryList from './components/HistoryList.vue'
 import MapContainer from './components/MapContainer.vue'
 import { usePath } from './composables/usePath'
 import { useHistory } from './composables/useHistory'
-import { fromLonLat } from 'ol/proj'
-
-const buildings = [
-  {
-    name: "图书馆",
-    coordinates: [113.0782, 28.1859],
-    type: "academic",
-    description: "图书馆是学校的主要教学场所..."
-  },
-  {
-    name: "第七教学楼",
-    coordinates: [113.0759, 28.1819],
-    type: "academic",
-    description: "第七教学楼是学校的主要教学场所..."
-  },
-  {
-    name: "金岸校区食堂",
-    coordinates: [113.0805, 28.1882],
-    type: "life",
-    description: "金岸校区学生食堂..."
-  }
-]
+import { fromLonLat, toLonLat } from 'ol/proj'
+import { buildings } from './data/buildings'
 
 const statusText = ref('点击建筑选择起点')
 const distanceText = ref('--')
@@ -91,6 +57,11 @@ const onBuildingSelect = (building, index) => {
     const feature = features[index]
     const coords = feature.getGeometry().getCoordinates()
     highlightedFeature.value = feature
+    mapContainer.value.map.getView().animate({
+      center: coords,
+      zoom: 18,
+      duration: 500
+    })
   }
 }
 
@@ -126,10 +97,10 @@ const onMapClick = (feature) => {
 
 const calculateAndDrawRoute = async () => {
   try {
-    const { fetchAndDrawRoute } = usePath(mapContainer.value?.vectorLayer) 
+    const { fetchAndDrawRoute } = usePath(mapContainer.value?.vectorLayer)
 
-    const startLonLat = ol.proj.toLonLat(startCoord)
-    const endLonLat = ol.proj.toLonLat(endCoord)
+    const startLonLat = toLonLat(startCoord)
+    const endLonLat = toLonLat(endCoord)
     const url = `https://router.project-osrm.org/route/v1/foot/${startLonLat[0]},${startLonLat[1]};${endLonLat[0]},${endLonLat[1]}?overview=full&geometries=geojson`
     const response = await fetch(url)
     const data = await response.json()
@@ -175,6 +146,4 @@ onMounted(() => {
 })
 </script>
 
-<style>
-
-</style>
+<style></style>

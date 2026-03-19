@@ -73,7 +73,7 @@ watch(() => props.highlightedFeature, (newFeat, oldFeat) => {
   if (newFeat) highlightFeature(newFeat)
 })
 
-defineExpose({ features })
+defineExpose({ features, map })
 </script>
 
 <style scoped>

@@ -11,11 +11,18 @@ import Overlay from 'ol/Overlay'
 import Feature from 'ol/Feature'
 import Point from 'ol/geom/Point'
 
+const typeColorMap = {
+  academic: '#ff6633',   // 学术建筑-橙色
+  life: '#33cc33',       // 生活设施-绿色
+  sports: '#ff33cc',     // 体育设施-粉色
+  default: '#3388ff'     // 默认蓝色
+}
+
 export function useMap() {
   const map = ref(null)
   const vectorLayer = ref(null)
   const popupOverlay = ref(null)
-  const features = ref([]) 
+  const features = ref([])
   const initMap = (targetId) => {
     const vectorSource = new VectorSource()
     vectorLayer.value = new VectorLayer({ source: vectorSource })
@@ -65,7 +72,7 @@ export function useMap() {
         description: building.description
       })
 
-      const color = building.type === 'academic' ? '#ff6633' : '#33cc33'
+      const color = typeColorMap[building.type] || typeColorMap.default
       feature.setStyle(new Style({
         image: new Circle({
           radius: 8,
@@ -80,7 +87,7 @@ export function useMap() {
   }
 
   const highlightFeature = (feature) => {
-   
+
     const highlightStyle = new Style({
       image: new Circle({
         radius: 14,
@@ -99,8 +106,9 @@ export function useMap() {
   }
 
   const resetFeatureStyle = (feature) => {
-  
-    const color = feature.get('type') === 'academic' ? '#ff6633' : '#33cc33'
+
+    const type = feature.get('type')
+    const color = typeColorMap[type] || typeColorMap.default
     feature.setStyle(new Style({
       image: new Circle({
         radius: 8,

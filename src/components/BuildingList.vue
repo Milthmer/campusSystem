@@ -55,4 +55,5 @@ defineEmits(['select'])
 .badge.academic { background: #ff6633; }
 .badge.life { background: #33cc33; }
 .badge.default { background: #3388ff; }
+.badge.sports { background: #ff33cc; }
 </style>
