@@ -1,11 +1,11 @@
 <template>
   <header>
     <h1>智慧校园地图</h1>
-    <ul>
-      <li><a href="#">首页</a></li>
-      <li><a href="#">关于</a></li>
-      <li><a href="#">联系</a></li>
-    </ul>
+    <div class="nav-links">
+      <a href="#" @click.prevent="showMessage('campus')">校园简介</a>
+      <a href="#" @click.prevent="showMessage('guide')">使用指南</a>
+      <a href="#" @click.prevent="showMessage('contact')">联系我们</a>
+    </div>
   </header>
 
   <div class="sidebar">
@@ -22,6 +22,22 @@
   <div id="info-panel">
     <span>{{ statusText }}</span> | 距离: <span>{{ distanceText }}</span>
   </div>
+
+  <!-- 弹窗遮罩层 -->
+  <div v-if="showModal" class="modal-overlay" @click.self="closeModal">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h3>{{ modalTitle }}</h3>
+        <button class="close-btn" @click="closeModal">✖</button>
+      </div>
+      <div class="modal-body">
+        <p style="white-space: pre-line;">{{ modalContent }}</p>
+      </div>
+      <div class="modal-footer">
+        <button @click="closeModal">关闭</button>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup>
@@ -34,6 +50,10 @@ import { useHistory } from './composables/useHistory'
 import { fromLonLat, toLonLat } from 'ol/proj'
 import { buildings } from './data/buildings'
 
+const showModal = ref(false)
+const modalTitle = ref('')
+const modalContent = ref('')
+
 const statusText = ref('点击建筑选择起点')
 const distanceText = ref('--')
 const selectedBuildingIndex = ref(-1)
@@ -45,6 +65,24 @@ const startFeature = ref(null)
 const endFeature = ref(null)
 let startCoord = null
 let endCoord = null
+
+function showMessage(type) {
+  if (type === 'campus') {
+    modalTitle.value = '🏫 校园简介'
+    modalContent.value = '湖南农业大学校园占地约3400亩，环境优美，拥有图书馆、教学楼、食堂、体育馆等完善设施。'
+  } else if (type === 'guide') {
+    modalTitle.value = '📖 使用指南'
+    modalContent.value = '1. 点击地图上的建筑标记可查看详情；\n2. 依次点击两个不同建筑，可计算步行路径；\n3. 历史路径会保存在侧边栏，可随时查看。'
+  } else if (type === 'contact') {
+    modalTitle.value = '📞 联系我们'
+    modalContent.value = '如有任何问题或建议，请联系：campus@example.com'
+  }
+  showModal.value = true
+}
+
+function closeModal() {
+  showModal.value = false
+}
 
 const { historyList, loadHistory, addHistoryItem, deleteHistoryItem, clearAllHistory } = useHistory()
 

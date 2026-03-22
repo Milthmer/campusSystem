@@ -3,11 +3,13 @@
   padding: 0;
   box-sizing: border-box;
 }
+
 body {
   font-family: 'Microsoft YaHei', sans-serif;
   overflow: hidden;
   height: 100vh;
 }
+
 h1 {
   color: rgb(254, 252, 252);
   position: absolute;
@@ -17,6 +19,7 @@ h1 {
   z-index: 2000;
   margin: 0;
 }
+
 header {
   background-color: #0f1010;
   height: 80px;
@@ -24,23 +27,32 @@ header {
   position: relative;
   z-index: 1500;
 }
-header ul {
+
+.nav-links {
   position: absolute;
   right: 5vw;
   top: 0;
   line-height: 80px;
+  display: flex;
+  /* 改为 flex 更方便控制间距 */
+  gap: 4vw;
+  /* 相当于原来的 margin-right: 4vw */
+  list-style: none;
+  margin: 0;
+  padding: 0;
 }
-header li {
-  display: inline;
-  margin-right: 4vw;
-}
-header a {
+
+.nav-links a {
   color: rgb(244, 238, 238);
   text-decoration: none;
+  font-size: 16px;
+  cursor: pointer;
 }
-header a:hover {
+
+.nav-links a:hover {
   text-decoration: underline;
 }
+
 .sidebar {
   position: absolute;
   top: 80px;
@@ -53,12 +65,14 @@ header a:hover {
   overflow-y: auto;
   z-index: 1000;
   backdrop-filter: blur(5px);
-  box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
 }
+
 .sidebar ul {
   list-style: none;
   padding: 0;
 }
+
 .sidebar li {
   margin-bottom: 10px;
   padding: 8px 10px;
@@ -68,18 +82,22 @@ header a:hover {
   display: flex;
   align-items: center;
 }
+
 .sidebar li:hover {
-  background: rgba(255,255,255,0.5);
+  background: rgba(255, 255, 255, 0.5);
 }
+
 .sidebar li.selected {
   background: #cfe9dc;
   font-weight: bold;
   border-left: 4px solid #45ce22;
 }
+
 .sidebar a {
   color: white;
   text-decoration: none;
 }
+
 h3 {
   border: 2px solid #45ce22;
   display: flex;
@@ -89,9 +107,10 @@ h3 {
   margin: 15px 0 10px;
   padding: 0;
   box-sizing: border-box;
-  background: rgba(255,255,255,0.3);
+  background: rgba(255, 255, 255, 0.3);
   border-radius: 4px;
 }
+
 .map-wrapper {
   position: absolute;
   top: 80px;
@@ -101,23 +120,25 @@ h3 {
   border: 2px solid #45ce22;
   border-left: none;
 }
+
 #info-panel {
   position: absolute;
   bottom: 20px;
   left: 270px;
-  background: rgba(0,0,0,0.7);
+  background: rgba(0, 0, 0, 0.7);
   color: white;
   padding: 10px 20px;
   border-radius: 4px;
   z-index: 2000;
   font-size: 14px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
   pointer-events: none;
 }
+
 .ol-popup {
   position: absolute;
   background-color: white;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
   padding: 15px;
   border-radius: 10px;
   border: 1px solid #cccccc;
@@ -125,7 +146,9 @@ h3 {
   left: -50px;
   min-width: 280px;
 }
-.ol-popup:after, .ol-popup:before {
+
+.ol-popup:after,
+.ol-popup:before {
   top: 100%;
   border: solid transparent;
   content: " ";
@@ -134,24 +157,131 @@ h3 {
   position: absolute;
   pointer-events: none;
 }
+
 .ol-popup:after {
   border-top-color: white;
   border-width: 10px;
   left: 48px;
   margin-left: -10px;
 }
+
 .ol-popup:before {
   border-top-color: #cccccc;
   border-width: 11px;
   left: 48px;
   margin-left: -11px;
 }
+
 .ol-popup-closer {
   text-decoration: none;
   position: absolute;
   top: 2px;
   right: 8px;
 }
+
 .ol-popup-closer:after {
   content: "✖";
+}
+
+.nav-buttons {
+  position: absolute;
+  right: 5vw;
+  top: 0;
+  line-height: 80px;
+  display: flex;
+  gap: 20px;
+}
+
+.nav-buttons button {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 8px 16px;
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+
+.nav-buttons button:hover {
+  background: rgba(255, 255, 255, 0.2);
+  text-decoration: underline;
+}
+
+/* 弹窗遮罩 */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 3000;
+}
+
+.modal-container {
+  background: white;
+  border-radius: 12px;
+  width: 400px;
+  max-width: 90%;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  animation: fadeIn 0.2s ease;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid #eee;
+}
+
+.modal-header h3 {
+  margin: 0;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.modal-body {
+  padding: 20px;
+  line-height: 1.5;
+}
+
+.modal-footer {
+  padding: 12px 20px;
+  text-align: right;
+  border-top: 1px solid #eee;
+}
+
+.modal-footer button {
+  padding: 6px 16px;
+  background: #45ce22;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.modal-footer button:hover {
+  background: #3bb11e;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
