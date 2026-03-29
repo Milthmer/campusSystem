@@ -1,6 +1,6 @@
 # campusSystem
 
-This template should help get you started developing with Vue 3 in Vite.
+基于Vue3+OpenLayers的交互式校园地图系统，实现建筑查询、路径规划、历史记录等功能。
 
 ## Recommended IDE Setup
 
