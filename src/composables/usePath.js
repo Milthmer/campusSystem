@@ -11,7 +11,7 @@ export function usePath(vectorLayer) {
     const startLonLat = toLonLat(startCoord3857)
     const endLonLat = toLonLat(endCoord3857)
 
-    const url = `https://router.project-osrm.org/route/v1/foot/${startLonLat[0]},${startLonLat[1]};${endLonLat[0]},${endLonLat[1]}?overview=full&geometries=geojson`
+    const url = `http://localhost:3000/route?startLon=${startLonLat[0]}&startLat=${startLonLat[1]}&endLon=${endLonLat[0]}&endLat=${endLonLat[1]}`;
 
     try {
       const response = await fetch(url)
