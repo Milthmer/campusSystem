@@ -45,7 +45,6 @@ import { ref, onMounted } from 'vue'
 import BuildingList from './components/BuildingList.vue'
 import HistoryList from './components/HistoryList.vue'
 import MapContainer from './components/MapContainer.vue'
-import { usePath } from './composables/usePath'
 import { useHistory } from './composables/useHistory'
 import { fromLonLat, toLonLat } from 'ol/proj'
 import { buildings } from './data/buildings'
@@ -65,6 +64,10 @@ const startFeature = ref(null)
 const endFeature = ref(null)
 let startCoord = null
 let endCoord = null
+const isCalculating = ref(false)
+
+const { historyList, loadHistory, addHistoryItem, deleteHistoryItem, clearAllHistory } = useHistory()
+const mapContainer = ref(null)
 
 function showMessage(type) {
   if (type === 'campus') {
@@ -84,10 +87,6 @@ function closeModal() {
   showModal.value = false
 }
 
-const { historyList, loadHistory, addHistoryItem, deleteHistoryItem, clearAllHistory } = useHistory()
-
-const mapContainer = ref(null)
-
 const onBuildingSelect = (building, index) => {
   selectedBuildingIndex.value = index
   const features = mapContainer.value?.features
@@ -100,6 +99,49 @@ const onBuildingSelect = (building, index) => {
       zoom: 18,
       duration: 500
     })
+  }
+}
+
+const calculateAndDrawRoute = async () => {
+  if (isCalculating.value) return
+  isCalculating.value = true
+  statusText.value = '⏳ 正在计算路径...'
+
+  try {
+    const startLonLat = toLonLat(startCoord)
+    const endLonLat = toLonLat(endCoord)
+    const url = `https://router.project-osrm.org/route/v1/foot/${startLonLat[0]},${startLonLat[1]};${endLonLat[0]},${endLonLat[1]}?overview=full&geometries=geojson`
+    const response = await fetch(url)
+    if (!response.ok) throw new Error(`HTTP ${response.status}`)
+    const data = await response.json()
+    if (data.code !== 'Ok') throw new Error(data.message || '路径规划失败')
+    const routeCoordsLonLat = data.routes[0].geometry.coordinates
+    const routeCoords3857 = routeCoordsLonLat.map(coord => fromLonLat(coord))
+    const distance = data.routes[0].distance
+
+    currentRouteCoords.value = routeCoords3857
+    distanceText.value = (distance / 1000).toFixed(2) + ' km'
+    statusText.value = `✅ 路径: ${startFeature.value.get('name')} → ${endFeature.value.get('name')}`
+
+    await addHistoryItem({
+      startName: startFeature.value.get('name'),
+      endName: endFeature.value.get('name'),
+      distance: distance,
+      coordinates: routeCoords3857
+    })
+
+    startFeature.value = null
+    endFeature.value = null
+    startCoord = null
+    endCoord = null
+  } catch (error) {
+    console.error(error)
+    statusText.value = `❌ 路径计算失败：${error.message}`
+    setTimeout(() => {
+      if (statusText.value.startsWith('❌')) statusText.value = '点击建筑选择起点'
+    }, 3000)
+  } finally {
+    isCalculating.value = false
   }
 }
 
@@ -120,8 +162,6 @@ const onMapClick = (feature) => {
     endFeature.value = feature
     endCoord = coord
     statusText.value = `终点: ${name}，计算路径中...`
-
-
     calculateAndDrawRoute()
   } else if (feature === startFeature.value) {
     statusText.value = '起点和终点不能相同，请重新选择终点'
@@ -133,55 +173,18 @@ const onMapClick = (feature) => {
   }
 }
 
-const calculateAndDrawRoute = async () => {
-  try {
-    const { fetchAndDrawRoute } = usePath(mapContainer.value?.vectorLayer)
-
-    const startLonLat = toLonLat(startCoord)
-    const endLonLat = toLonLat(endCoord)
-    const url = `https://router.project-osrm.org/route/v1/foot/${startLonLat[0]},${startLonLat[1]};${endLonLat[0]},${endLonLat[1]}?overview=full&geometries=geojson`
-    const response = await fetch(url)
-    const data = await response.json()
-    if (data.code !== 'Ok') throw new Error('路径计算失败')
-    const routeCoordsLonLat = data.routes[0].geometry.coordinates
-    const routeCoords3857 = routeCoordsLonLat.map(coord => fromLonLat(coord))
-    const distance = data.routes[0].distance
-
-    currentRouteCoords.value = routeCoords3857
-    distanceText.value = (distance / 1000).toFixed(2) + ' km'
-    statusText.value = `✅ 路径: ${startFeature.value.get('name')} → ${endFeature.value.get('name')}`
-
-    addHistoryItem({
-      id: Date.now() + '-' + Math.random().toString(36).substr(2, 9),
-      startName: startFeature.value.get('name'),
-      endName: endFeature.value.get('name'),
-      startCoord: startCoord,
-      endCoord: endCoord,
-      distance,
-      coordinates: routeCoords3857,
-      timestamp: Date.now()
-    })
-
-    startFeature.value = null
-    endFeature.value = null
-    startCoord = null
-    endCoord = null
-  } catch (error) {
-    console.error(error)
-    statusText.value = '❌ 路径计算失败'
-  }
-}
-
 const onHistorySelect = (item) => {
   activeHistoryId.value = item.id
   currentRouteCoords.value = item.coordinates
   distanceText.value = (item.distance / 1000).toFixed(2) + ' km'
-  statusText.value = `显示历史: ${item.startName} → ${item.endName}`
+  statusText.value = `显示历史: ${item.start_name} → ${item.end_name}`
 }
 
-onMounted(() => {
-  loadHistory()
+onMounted(async () => {
+  await loadHistory()
 })
 </script>
 
-<style></style>
+<style>
+/* 你的原有样式保持不变 */
+</style>
