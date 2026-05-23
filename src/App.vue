@@ -6,6 +6,16 @@
       <a href="#" @click.prevent="showMessage('guide')">使用指南</a>
       <a href="#" @click.prevent="showMessage('contact')">联系我们</a>
     </div>
+    <div class="auth-buttons">
+      <template v-if="username">
+        <span class="user-label">当前用户: {{ username }}</span>
+        <button @click="doLogout">登出</button>
+      </template>
+      <template v-else>
+        <button @click="doRegister">注册</button>
+        <button @click="doLogin">登录</button>
+      </template>
+    </div>
   </header>
 
   <div class="sidebar">
@@ -22,6 +32,11 @@
   <div id="info-panel">
     <span>{{ statusText }}</span> | 距离: <span>{{ distanceText }}</span>
   </div>
+
+  <AuthModal :visible="showLoginModal"
+    @close="showLoginModal = false" @logged-in="onLoggedIn" />
+  <RegisterModal :visible="showRegisterModal"
+    @close="showRegisterModal = false" />
 
   <!-- 弹窗遮罩层 -->
   <div v-if="showModal" class="modal-overlay" @click.self="closeModal">
@@ -45,7 +60,10 @@ import { ref, onMounted } from 'vue'
 import BuildingList from './components/BuildingList.vue'
 import HistoryList from './components/HistoryList.vue'
 import MapContainer from './components/MapContainer.vue'
+import AuthModal from './components/AuthModal.vue'
+import RegisterModal from './components/RegisterModal.vue'
 import { useHistory } from './composables/useHistory'
+import { useAuth } from './composables/useAuth'
 import { fromLonLat, toLonLat } from 'ol/proj'
 import { buildings } from './data/buildings'
 
@@ -67,7 +85,11 @@ let endCoord = null
 const isCalculating = ref(false)
 
 const { historyList, loadHistory, addHistoryItem, deleteHistoryItem, clearAllHistory } = useHistory()
+const { username, logout } = useAuth()
 const mapContainer = ref(null)
+
+const showLoginModal = ref(false)
+const showRegisterModal = ref(false)
 
 function showMessage(type) {
   if (type === 'campus') {
@@ -103,10 +125,12 @@ const onBuildingSelect = (building, index) => {
 }
 
 const calculateAndDrawRoute = async () => {
+  //检查是否在计算路径
   if (isCalculating.value) return
   isCalculating.value = true
   statusText.value = '⏳ 正在计算路径...'
 
+  //尝试计算路径
   try {
     const startLonLat = toLonLat(startCoord)
     const endLonLat = toLonLat(endCoord)
@@ -119,10 +143,12 @@ const calculateAndDrawRoute = async () => {
     const routeCoords3857 = routeCoordsLonLat.map(coord => fromLonLat(coord))
     const distance = data.routes[0].distance
 
+    //更新路径和距离信息
     currentRouteCoords.value = routeCoords3857
     distanceText.value = (distance / 1000).toFixed(2) + ' km'
     statusText.value = `✅ 路径: ${startFeature.value.get('name')} → ${endFeature.value.get('name')}`
 
+    //添加历史记录
     await addHistoryItem({
       startName: startFeature.value.get('name'),
       endName: endFeature.value.get('name'),
@@ -130,6 +156,7 @@ const calculateAndDrawRoute = async () => {
       coordinates: routeCoords3857
     })
 
+    //重置起点和终点信息
     startFeature.value = null
     endFeature.value = null
     startCoord = null
@@ -182,9 +209,59 @@ const onHistorySelect = (item) => {
 
 onMounted(async () => {
   await loadHistory()
+  window.addEventListener('unauthorized', () => {
+    logout()
+    historyList.value = []
+  })
 })
+
+const doRegister = () => {
+    showRegisterModal.value = true
+};
+
+const doLogin = () => {
+    showLoginModal.value = true
+};
+
+const doLogout = () => {
+    logout()
+    historyList.value = []
+    statusText.value = '点击建筑选择起点'
+    distanceText.value = '--'
+    currentRouteCoords.value = null
+};
+
+const onLoggedIn = async () => {
+    showLoginModal.value = false
+    await loadHistory()
+};
 </script>
 
 <style>
-/* 你的原有样式保持不变 */
+.auth-buttons {
+  position: absolute;
+  top: 10px;
+  right: 20px;
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.auth-buttons button {
+  background: none;
+  border: 1px solid rgba(255,255,255,0.6);
+  color: white;
+  padding: 4px 14px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background 0.2s;
+}
+.auth-buttons button:hover {
+  background: rgba(255,255,255,0.2);
+}
+.user-label {
+  color: rgba(255,255,255,0.9);
+  font-size: 14px;
+}
 </style>

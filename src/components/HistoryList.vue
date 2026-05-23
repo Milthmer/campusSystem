@@ -28,7 +28,7 @@ const props = defineProps({
 defineEmits(['select', 'delete', 'clear'])
 
 const sortedHistory = computed(() => {
-  return [...props.historyList].sort((a, b) => b.timestamp - a.timestamp)
+  return [...props.historyList].sort((a, b) => b.id - a.id)
 })
 </script>
 
