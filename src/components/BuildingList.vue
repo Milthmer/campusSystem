@@ -27,6 +27,20 @@ defineEmits(['select'])
 .building-list ul {
   list-style: none;
   padding: 0;
+  max-height: 160px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0,0,0,0.15) transparent;
+}
+.building-list ul::-webkit-scrollbar {
+  width: 4px;
+}
+.building-list ul::-webkit-scrollbar-thumb {
+  background: rgba(0,0,0,0.15);
+  border-radius: 2px;
+}
+.building-list ul::-webkit-scrollbar-track {
+  background: transparent;
 }
 .building-list li {
   margin-bottom: 10px;

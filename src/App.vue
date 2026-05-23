@@ -6,22 +6,13 @@
       <a href="#" @click.prevent="showMessage('guide')">使用指南</a>
       <a href="#" @click.prevent="showMessage('contact')">联系我们</a>
     </div>
-    <div class="auth-buttons">
-      <template v-if="username">
-        <span class="user-label">当前用户: {{ username }}</span>
-        <button @click="doLogout">登出</button>
-      </template>
-      <template v-else>
-        <button @click="doRegister">注册</button>
-        <button @click="doLogin">登录</button>
-      </template>
-    </div>
   </header>
 
   <div class="sidebar">
-    <BuildingList :buildings="buildings" :selectedIndex="selectedBuildingIndex" @select="onBuildingSelect" />
-    <HistoryList :historyList="historyList" :activeId="activeHistoryId" @select="onHistorySelect"
-      @delete="deleteHistoryItem" @clear="clearAllHistory" />
+    <BuildingSearch :buildings="buildings" :selectedIndex="selectedBuildingIndex" @select="onBuildingSelect" />
+    <HistoryList :historyList="historyList" :activeId="activeHistoryId" :username="username"
+      @select="onHistorySelect" @delete="deleteHistoryItem" @clear="clearAllHistory"
+      @register="doRegister" @login="doLogin" @logout="doLogout" />
   </div>
 
   <div class="map-wrapper">
@@ -36,7 +27,7 @@
   <AuthModal :visible="showLoginModal"
     @close="showLoginModal = false" @logged-in="onLoggedIn" />
   <RegisterModal :visible="showRegisterModal"
-    @close="showRegisterModal = false" />
+    @close="showRegisterModal = false" @registered="onRegistered" />
 
   <!-- 弹窗遮罩层 -->
   <div v-if="showModal" class="modal-overlay" @click.self="closeModal">
@@ -57,7 +48,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import BuildingList from './components/BuildingList.vue'
+import BuildingSearch from './components/BuildingSearch.vue'
 import HistoryList from './components/HistoryList.vue'
 import MapContainer from './components/MapContainer.vue'
 import AuthModal from './components/AuthModal.vue'
@@ -231,6 +222,11 @@ const doLogout = () => {
     currentRouteCoords.value = null
 };
 
+const onRegistered = () => {
+    showRegisterModal.value = false
+    showLoginModal.value = true
+};
+
 const onLoggedIn = async () => {
     showLoginModal.value = false
     await loadHistory()
@@ -238,30 +234,4 @@ const onLoggedIn = async () => {
 </script>
 
 <style>
-.auth-buttons {
-  position: absolute;
-  top: 10px;
-  right: 20px;
-  z-index: 2000;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-.auth-buttons button {
-  background: none;
-  border: 1px solid rgba(255,255,255,0.6);
-  color: white;
-  padding: 4px 14px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 14px;
-  transition: background 0.2s;
-}
-.auth-buttons button:hover {
-  background: rgba(255,255,255,0.2);
-}
-.user-label {
-  color: rgba(255,255,255,0.9);
-  font-size: 14px;
-}
 </style>

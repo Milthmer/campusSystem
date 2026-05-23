@@ -34,7 +34,7 @@
 import { ref, watch } from 'vue'
 import { useAuth } from '../composables/useAuth'
 
-const emit = defineEmits(['close'])
+const emit = defineEmits(['close', 'registered'])
 
 const props = defineProps({
   visible: Boolean
@@ -79,10 +79,7 @@ async function submit() {
   const ok = await register(username.value.trim(), password.value)
   loading.value = false
   if (ok) {
-    successMsg.value = '用户创建成功'
-    username.value = ''
-    password.value = ''
-    confirmPassword.value = ''
+    emit('registered')
   }
 }
 
