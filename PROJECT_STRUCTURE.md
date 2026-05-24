@@ -10,8 +10,13 @@
 ## 目录结构
 ```
 campusSystem/
+├── .gitignore
+├── .vscode/
+│   ├── extensions.json
+│   └── settings.json
 ├── index.html
 ├── package.json
+├── jsconfig.json
 ├── vite.config.js
 ├── app.js          # Express 后端（认证 + OSRM 代理 + 历史 CRUD）
 ├── auth.js         # JWT 认证模块（注册/登录/中间件）
@@ -22,11 +27,12 @@ campusSystem/
 │   ├── assets/
 │   │   └── main.css
 │   ├── components/
-│   │   ├── BuildingList.vue   # 侧边栏建筑列表
-│   │   ├── HistoryList.vue    # 历史记录列表
-│   │   ├── MapContainer.vue   # 地图容器（封装 useMap）
-│   │   ├── AuthModal.vue      # 登录弹窗
-│   │   └── RegisterModal.vue  # 注册（创建用户）弹窗
+│   │   ├── BuildingSearch.vue  # 侧边栏建筑搜索列表（关键词过滤）
+│   │   ├── BuildingList.vue    # [已废弃] 旧版建筑列表，已由 BuildingSearch 替代
+│   │   ├── HistoryList.vue     # 历史记录列表
+│   │   ├── MapContainer.vue    # 地图容器（封装 useMap）
+│   │   ├── AuthModal.vue       # 登录弹窗
+│   │   └── RegisterModal.vue   # 注册（创建用户）弹窗
 │   ├── composables/
 │   │   ├── useMap.js     # 地图初始化、标记、高亮、弹窗
 │   │   ├── useHistory.js # 历史记录 API 交互（JWT 鉴权）
@@ -34,7 +40,7 @@ campusSystem/
 │   │   └── usePath.js    # 路径规划请求与绘制（暂未使用）
 │   └── data/
 │       └── buildings.js  # 建筑静态数据（7栋）
-└── README.md
+└── PROJECT_STRUCTURE.md
 ```
 
 ## 后端 API 设计 (`app.js`)
@@ -85,7 +91,10 @@ MapContainer.vue 挂载 → 调用 `useMap().initMap()` 创建地图 → 调用 
 - **登出**：点击"登出"按钮 → 清除 token 和 username → 清空历史列表 → 重置地图状态
 - **Token 过期**：API 返回 401 → `useHistory` 分发 `unauthorized` 事件 → App.vue 监听到后自动执行登出
 
-### 3. 路径规划
+### 3. 建筑搜索
+BuildingSearch 组件提供关键词过滤 → `visibleBuildings` 计算属性实时过滤建筑列表 → 点击选中建筑 → emit `select` 事件 → App.vue `onBuildingSelect` 处理
+
+### 4. 路径规划
 用户依次点击两个建筑标记 → `onMapClick` 记录起点/终点 → `calculateAndDrawRoute()`
 
 将起点/终点坐标转经纬度 → 请求 OSRM 公共 API
@@ -96,8 +105,8 @@ MapContainer 监听到 `routeCoords` 变化 → 绘制蓝色虚线路径
 
 调用 `addHistoryItem` 保存到数据库（携带 JWT token）→ 刷新历史列表
 
-### 4. 历史回放
+### 5. 历史回放
 点击历史条目 → `onHistorySelect` 直接将 `item.coordinates` 赋值给 `currentRouteCoords` → 地图立即绘制路径
 
-### 5. 删除历史
+### 6. 删除历史
 点击删除按钮 → 调用 `deleteHistoryItem(id)` → 后端删除（校验 `user_id` 权限）→ 重新拉取列表
