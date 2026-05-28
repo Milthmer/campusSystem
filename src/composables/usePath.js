@@ -11,7 +11,7 @@ export function usePath(vectorLayer) {
     const startLonLat = toLonLat(startCoord3857)
     const endLonLat = toLonLat(endCoord3857)
 
-    const url = `http://localhost:3000/route?startLon=${startLonLat[0]}&startLat=${startLonLat[1]}&endLon=${endLonLat[0]}&endLat=${endLonLat[1]}`;
+    const url = `${import.meta.env.VITE_API_BASE}/route?startLon=${startLonLat[0]}&startLat=${startLonLat[1]}&endLon=${endLonLat[0]}&endLat=${endLonLat[1]}`;
 
     try {
       const response = await fetch(url)

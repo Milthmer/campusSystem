@@ -1,6 +1,6 @@
 import { ref } from 'vue'
 
-const API_BASE = 'http://localhost:3000/api/history'
+const API_BASE = `${import.meta.env.VITE_API_BASE}/api/history`
 
 function getAuthHeaders() {
     const token = localStorage.getItem('token');

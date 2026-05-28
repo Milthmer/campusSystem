@@ -1,6 +1,6 @@
 import { ref } from 'vue'
 
-const API_BASE = 'http://localhost:3000/api/auth'
+const API_BASE = `${import.meta.env.VITE_API_BASE}/api/auth`
 
 const token = ref(localStorage.getItem('token') || '')
 const username = ref(localStorage.getItem('username') || '')
